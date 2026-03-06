@@ -1,0 +1,103 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# MedLive — Local Development Stack
+#
+# Usage:
+#   docker-compose up           # Start everything
+#   docker-compose up app       # App only (uses in-memory mock data)
+#   docker-compose down -v      # Tear down + clear Firestore emulator data
+#
+# The app is available at http://localhost:8000
+# The Firestore emulator UI is at http://localhost:4000
+# ---------------------------------------------------------------------------
+
+services:
+  # -------------------------------------------------------------------------
+  # Firestore emulator (Firebase Emulator Suite)
+  # -------------------------------------------------------------------------
+  firestore:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    command: >
+      bash -c "
+        apt-get install -y default-jre-headless &&
+        gcloud components install cloud-firestore-emulator beta --quiet &&
+        gcloud beta emulators firestore start
+          --host-port=0.0.0.0:8080
+          --project=medlive-local
+      "
+    ports:
+      - "8080:8080"   # Firestore gRPC
+      - "4000:4000"   # Emulator UI (opened via firebase emulators:start in some setups)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # -------------------------------------------------------------------------
+  # MedLive application
+  # -------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Use Firestore emulator when running locally
+      FIRESTORE_EMULATOR_HOST: "firestore:8080"
+      GOOGLE_CLOUD_PROJECT: "medlive-local"
+      GOOGLE_CLOUD_LOCATION: "us-central1"
+      GOOGLE_GENAI_USE_VERTEXAI: "FALSE"
+      MEDLIVE_MODEL: "gemini-2.5-flash-native-audio-latest"
+      USE_FIRESTORE: "true"
+      PORT: "8000"
+    env_file:
+      - .env   # Must contain GOOGLE_API_KEY
+    volumes:
+      # Mount credentials for local dev (not included in Docker image)
+      - ./credentials:/app/credentials:ro
+    depends_on:
+      firestore:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: on-failure
+
+  # -------------------------------------------------------------------------
+  # Optional: Seed Firestore with demo data after both services are healthy
+  # -------------------------------------------------------------------------
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uv run python scripts/seed_firestore.py
+    environment:
+      FIRESTORE_EMULATOR_HOST: "firestore:8080"
+      GOOGLE_CLOUD_PROJECT: "medlive-local"
+      USE_FIRESTORE: "true"
+    env_file:
+      - .env
+    volumes:
+      - ./credentials:/app/credentials:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: "no"
+
+# ---------------------------------------------------------------------------
+# Quick start without Docker (pure local):
+#
+#   cp .env.example .env
+#   # Edit .env: add GOOGLE_API_KEY, set USE_FIRESTORE=false
+#   uv sync
+#   uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+#
+# With USE_FIRESTORE=false the app uses in-memory mock data (no Firebase needed).
+# ---------------------------------------------------------------------------

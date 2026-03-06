@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedLive — System Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #fdfbf7;
+      font-family: 'Kalam', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 24px 56px;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #2d2d2d;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-family: 'Patrick Hand', sans-serif;
+      color: #777;
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .diagram-wrap {
+      border: 2px solid #e5e0d8;
+      border-radius: 12px;
+      padding: 16px;
+      background: #fdfbf7;
+      box-shadow: 4px 6px 20px rgba(0,0,0,0.07);
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    svg { display: block; }
+    .footer {
+      font-family: 'Patrick Hand', sans-serif;
+      color: #aaa;
+      font-size: 0.82rem;
+      margin-top: 20px;
+      text-align: center;
+      line-height: 1.7;
+    }
+    @media print {
+      body { padding: 12px; }
+      .diagram-wrap { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🏥 MedLive — System Architecture</h1>
+<p class="subtitle">Real-time multilingual AI health guardian &nbsp;·&nbsp; Gemini Live Agent Challenge 2026</p>
+
+<div class="diagram-wrap">
+<svg width="1080" height="830" viewBox="0 0 1080 830" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Filters -->
+    <filter id="sh" x="-8%" y="-8%" width="120%" height="125%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#2d2d2d" flood-opacity="0.10"/>
+    </filter>
+    <filter id="sh2" x="-4%" y="-4%" width="112%" height="118%">
+      <feDropShadow dx="3" dy="4" stdDeviation="5" flood-color="#2d2d2d" flood-opacity="0.08"/>
+    </filter>
+
+    <!-- Arrowheads -->
+    <marker id="arr" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#2d2d2d"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#2d5da1"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-green" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <!-- ═══════════════════════════════════════════════
+       BACKGROUND PAPER
+  ═══════════════════════════════════════════════ -->
+  <rect width="1080" height="830" fill="#fdfbf7" rx="8"/>
+
+  <!-- layer dividers (horizontal dashes) -->
+  <line x1="18" y1="155" x2="1062" y2="155" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="6,5"/>
+  <line x1="18" y1="470" x2="1062" y2="470" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="6,5"/>
+  <line x1="18" y1="635" x2="1062" y2="635" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="6,5"/>
+
+  <!-- layer labels (right margin) -->
+  <text transform="translate(1058,95) rotate(90)"  font-family="Patrick Hand,sans-serif" font-size="10" fill="#bbb" text-anchor="middle">CLIENT</text>
+  <text transform="translate(1058,310) rotate(90)" font-family="Patrick Hand,sans-serif" font-size="10" fill="#bbb" text-anchor="middle">APP · Cloud Run</text>
+  <text transform="translate(1058,550) rotate(90)" font-family="Patrick Hand,sans-serif" font-size="10" fill="#bbb" text-anchor="middle">AI + DATA</text>
+  <text transform="translate(1058,730) rotate(90)" font-family="Patrick Hand,sans-serif" font-size="10" fill="#bbb" text-anchor="middle">INFRA</text>
+
+  <!-- ═══════════════════════════════════════════════
+       ROW 1 · CLIENT LAYER  (y: 28–150)
+  ═══════════════════════════════════════════════ -->
+
+  <!-- Patient Voice UI -->
+  <g filter="url(#sh)">
+    <rect x="28" y="28" width="198" height="118" rx="18" ry="6" fill="#dbeafe" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="127" y="52"  font-family="Kalam,cursive" font-size="12.5" font-weight="700" fill="#1e3a5f" text-anchor="middle">🎙️ Patient Voice UI</text>
+  <text x="127" y="69"  font-family="Patrick Hand,sans-serif" font-size="10.5" fill="#1e3a5f" text-anchor="middle">index.html</text>
+  <line x1="38" y1="75" x2="216" y2="75" stroke="#93c5fd" stroke-width="1"/>
+  <text x="127" y="89"  font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">mic + camera + transcript</text>
+  <text x="127" y="103" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">16 kHz PCM upstream →</text>
+  <text x="127" y="117" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">← 24 kHz PCM downstream</text>
+  <text x="127" y="132" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">pill verify · scan · SOS</text>
+
+  <!-- Onboarding -->
+  <g filter="url(#sh)">
+    <rect x="248" y="28" width="178" height="118" rx="6" ry="18" fill="#dbeafe" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="337" y="52"  font-family="Kalam,cursive" font-size="12.5" font-weight="700" fill="#1e3a5f" text-anchor="middle">⚙️ Onboarding</text>
+  <text x="337" y="69"  font-family="Patrick Hand,sans-serif" font-size="10.5" fill="#1e3a5f" text-anchor="middle">onboarding.html</text>
+  <line x1="258" y1="75" x2="416" y2="75" stroke="#93c5fd" stroke-width="1"/>
+  <text x="337" y="89"  font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">language selection</text>
+  <text x="337" y="103" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">companion name + avatar</text>
+  <text x="337" y="117" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">family link code</text>
+  <text x="337" y="132" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">saves to Firestore profile</text>
+
+  <!-- Family Dashboard -->
+  <g filter="url(#sh)">
+    <rect x="448" y="28" width="192" height="118" rx="22" ry="7" fill="#dbeafe" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="544" y="52"  font-family="Kalam,cursive" font-size="12.5" font-weight="700" fill="#1e3a5f" text-anchor="middle">📊 Family Dashboard</text>
+  <text x="544" y="69"  font-family="Patrick Hand,sans-serif" font-size="10.5" fill="#1e3a5f" text-anchor="middle">dashboard.html</text>
+  <line x1="458" y1="75" x2="630" y2="75" stroke="#93c5fd" stroke-width="1"/>
+  <text x="544" y="89"  font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">adherence doughnut chart</text>
+  <text x="544" y="103" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">BP · blood sugar · weight</text>
+  <text x="544" y="117" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">missed dose alerts</text>
+  <text x="544" y="132" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">family link code gate</text>
+
+  <!-- Firebase Auth -->
+  <g filter="url(#sh)">
+    <rect x="662" y="28" width="190" height="118" rx="10" ry="22" fill="#ffedd5" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="757" y="52"  font-family="Kalam,cursive" font-size="12.5" font-weight="700" fill="#7c2d12" text-anchor="middle">🔐 Firebase Auth</text>
+  <text x="757" y="69"  font-family="Patrick Hand,sans-serif" font-size="10.5" fill="#7c2d12" text-anchor="middle">Google Sign-In</text>
+  <line x1="672" y1="75" x2="842" y2="75" stroke="#fdba74" stroke-width="1"/>
+  <text x="757" y="89"  font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">ID token  (1 h TTL)</text>
+  <text x="757" y="103" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">auto-refresh every 50 min</text>
+  <text x="757" y="117" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">Bearer token → WS + REST</text>
+  <text x="757" y="132" font-family="Patrick Hand,sans-serif" font-size="10" fill="#4b5563" text-anchor="middle">firebase-admin verify (server)</text>
+
+  <!-- ═══════════════════════════════════════════════
+       ROW 2 · CLOUD RUN APP LAYER  (y: 172–462)
+  ═══════════════════════════════════════════════ -->
+
+  <!-- Outer Cloud Run box -->
+  <g filter="url(#sh2)">
+    <rect x="18" y="172" width="730" height="290" rx="14" ry="5" fill="#f0fdf4" stroke="#2d2d2d" stroke-width="2.2"/>
+  </g>
+  <text x="383" y="192" font-family="Kalam,cursive" font-size="13" font-weight="700" fill="#14532d" text-anchor="middle">☁️ Google Cloud Run  ·  FastAPI + uvicorn  ·  us-central1  ·  2 vCPU  ·  2 Gi  ·  min 1 instance  ·  1 h WS timeout</text>
+
+  <!-- ADK dashed inner box -->
+  <rect x="30" y="202" width="706" height="250" rx="8" ry="3" fill="none" stroke="#15803d" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="50" y="218" font-family="Patrick Hand,sans-serif" font-size="10.5" fill="#15803d">Google ADK Runner → root_agent  (agents/agent.py)</text>
+
+  <!-- Guardian Agent box -->
+  <g filter="url(#sh)">
+    <rect x="42" y="226" width="208" height="210" rx="16" ry="6" fill="#fefce8" stroke="#2d2d2d" stroke-width="1.6"/>
+  </g>
+  <text x="146" y="248" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#2d2d2d" text-anchor="middle">🛡️ Guardian Agent</text>
+  <text x="146" y="263" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">guardian/tools.py</text>
+  <line x1="52" y1="269" x2="240" y2="269" stroke="#e5e0d8" stroke-width="1"/>
+  <text x="146" y="283" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• verify_pill_matches</text>
+  <text x="146" y="297" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• get_medication_schedule</text>
+  <text x="146" y="311" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• log_medication_taken</text>
+  <text x="146" y="325" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• log_vitals · log_meal</text>
+  <text x="146" y="339" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• detect_emergency_severity</text>
+  <text x="146" y="353" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• initiate_emergency_protocol</text>
+  <text x="146" y="367" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• initiate_family_call</text>
+  <text x="146" y="381" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• send_family_alert</text>
+  <text x="146" y="395" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Hindi · Spanish · English</text>
+  <text x="146" y="409" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">+ Kannada + auto-detect</text>
+  <text x="146" y="423" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">RED LINE: no advice → 911</text>
+
+  <!-- Insights Agent box -->
+  <g filter="url(#sh)">
+    <rect x="268" y="226" width="196" height="210" rx="5" ry="18" fill="#fefce8" stroke="#2d2d2d" stroke-width="1.6"/>
+  </g>
+  <text x="366" y="248" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#2d2d2d" text-anchor="middle">📈 Insights Agent</text>
+  <text x="366" y="263" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">insights/tools.py</text>
+  <line x1="278" y1="269" x2="454" y2="269" stroke="#e5e0d8" stroke-width="1"/>
+  <text x="366" y="283" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• get_adherence_score</text>
+  <text x="366" y="297" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• get_vital_trends</text>
+  <text x="366" y="311" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• get_daily_digest</text>
+  <text x="366" y="325" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• send_family_alert</text>
+  <text x="366" y="339" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">7-day rolling window</text>
+  <text x="366" y="353" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">adherence scoring 0–100</text>
+  <text x="366" y="367" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">trend: stable/rising/falling</text>
+  <text x="366" y="381" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">priority: normal / high 🚨</text>
+  <text x="366" y="395" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">/api/dashboard live data</text>
+
+  <!-- Interpreter Agent box -->
+  <g filter="url(#sh)">
+    <rect x="482" y="226" width="244" height="210" rx="20" ry="7" fill="#fefce8" stroke="#2d2d2d" stroke-width="1.6"/>
+  </g>
+  <text x="604" y="248" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#2d2d2d" text-anchor="middle">🌐 Interpreter Agent</text>
+  <text x="604" y="263" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">interpreter/tools.py</text>
+  <line x1="492" y1="269" x2="716" y2="269" stroke="#e5e0d8" stroke-width="1"/>
+  <text x="604" y="283" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• read_prescription (Gemini Vision)</text>
+  <text x="604" y="297" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• read_report (lab extraction)</text>
+  <text x="604" y="311" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">• translate_text</text>
+  <text x="604" y="325" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">structured JSON schema output</text>
+  <text x="604" y="339" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">meds: name · dosage · frequency</text>
+  <text x="604" y="353" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">labs: value · unit · ref range</text>
+  <text x="604" y="367" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">drug interactions (RxNorm/FDA)</text>
+  <text x="604" y="381" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">saves to Firestore subcollection</text>
+  <text x="604" y="395" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">prescription + lab report history</text>
+
+  <!-- REST endpoints sidebar -->
+  <g filter="url(#sh)">
+    <rect x="762" y="172" width="258" height="290" rx="10" ry="4" fill="#f5f3ff" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="891" y="192" font-family="Kalam,cursive" font-size="12.5" font-weight="700" fill="#4c1d95" text-anchor="middle">🔌 REST / WS Endpoints</text>
+  <line x1="772" y1="198" x2="1010" y2="198" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="778" y="213" font-family="Patrick Hand,sans-serif" font-size="10" fill="#3b0764">WS   /ws/{uid}?token=…</text>
+  <text x="778" y="227" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">GET  /</text>
+  <text x="778" y="241" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">GET  /dashboard</text>
+  <text x="778" y="255" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">GET  /health</text>
+  <text x="778" y="269" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">GET  /api/config</text>
+  <line x1="772" y1="275" x2="1010" y2="275" stroke="#e5e0d8" stroke-width="0.8"/>
+  <text x="778" y="290" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">GET  /api/auth/profile</text>
+  <text x="778" y="304" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/auth/profile</text>
+  <text x="778" y="318" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">GET  /api/dashboard</text>
+  <line x1="772" y1="324" x2="1010" y2="324" stroke="#e5e0d8" stroke-width="0.8"/>
+  <text x="778" y="339" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/scan</text>
+  <text x="778" y="353" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/avatar/generate</text>
+  <text x="778" y="367" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/family/code/generate</text>
+  <text x="778" y="381" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/family/code/verify</text>
+  <line x1="772" y1="387" x2="1010" y2="387" stroke="#e5e0d8" stroke-width="0.8"/>
+  <text x="778" y="402" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/reminders/register</text>
+  <text x="778" y="416" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/reminders/trigger</text>
+  <line x1="772" y1="422" x2="1010" y2="422" stroke="#e5e0d8" stroke-width="0.8"/>
+  <text x="778" y="437" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/calling/initiate</text>
+  <text x="778" y="451" font-family="Patrick Hand,sans-serif" font-size="10" fill="#555">POST /api/calling/status</text>
+
+  <!-- ═══════════════════════════════════════════════
+       ROW 3 · AI + DATA LAYER  (y: 480–625)
+  ═══════════════════════════════════════════════ -->
+
+  <!-- Gemini Live API -->
+  <g filter="url(#sh)">
+    <rect x="18" y="482" width="200" height="140" rx="18" ry="6" fill="#ede9fe" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="118" y="504" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#3b0764" text-anchor="middle">✨ Gemini Live API</text>
+  <text x="118" y="520" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#4c1d95" text-anchor="middle">gemini-2.5-flash-native-audio</text>
+  <line x1="28" y1="526" x2="208" y2="526" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="118" y="540" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">bidirectional audio streaming</text>
+  <text x="118" y="554" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">native audio synthesis</text>
+  <text x="118" y="568" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">tool calling via ADK</text>
+  <text x="118" y="582" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">real-time vision (camera)</text>
+  <text x="118" y="596" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">multilingual voice responses</text>
+  <text x="118" y="610" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">RunConfig: BIDI + AUDIO</text>
+
+  <!-- Gemini 2.0 Flash (vision) -->
+  <g filter="url(#sh)">
+    <rect x="236" y="482" width="200" height="140" rx="6" ry="20" fill="#ede9fe" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="336" y="504" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#3b0764" text-anchor="middle">🔍 Gemini 2.0 Flash</text>
+  <text x="336" y="520" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#4c1d95" text-anchor="middle">gemini-2.0-flash (vision)</text>
+  <line x1="246" y1="526" x2="426" y2="526" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="336" y="540" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">prescription extraction</text>
+  <text x="336" y="554" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">lab report reading</text>
+  <text x="336" y="568" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">response_mime_type=JSON</text>
+  <text x="336" y="582" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">response_schema validation</text>
+  <text x="336" y="596" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">meds: name·dose·frequency</text>
+  <text x="336" y="610" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">POST /api/scan endpoint</text>
+
+  <!-- Imagen 3 -->
+  <g filter="url(#sh)">
+    <rect x="454" y="482" width="178" height="140" rx="22" ry="7" fill="#ede9fe" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="543" y="504" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#3b0764" text-anchor="middle">🎨 Imagen 3</text>
+  <text x="543" y="520" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#4c1d95" text-anchor="middle">imagen-3.0-generate-002</text>
+  <line x1="464" y1="526" x2="622" y2="526" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="543" y="540" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">avatar generation</text>
+  <text x="543" y="554" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">photo → 3D cartoon style</text>
+  <text x="543" y="568" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">RAI-safe prompt template</text>
+  <text x="543" y="582" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">256 × 256 base64 PNG</text>
+  <text x="543" y="596" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">stored in Firestore profile</text>
+  <text x="543" y="610" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">POST /api/avatar/generate</text>
+
+  <!-- Cloud Firestore -->
+  <g filter="url(#sh)">
+    <rect x="650" y="482" width="210" height="140" rx="8" ry="24" fill="#dcfce7" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="755" y="504" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#14532d" text-anchor="middle">🗄️ Cloud Firestore</text>
+  <text x="755" y="520" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#166534" text-anchor="middle">users/{uid}/  subcollections</text>
+  <line x1="660" y1="526" x2="850" y2="526" stroke="#86efac" stroke-width="1"/>
+  <text x="755" y="540" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">medications</text>
+  <text x="755" y="554" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">adherence_log · vitals_log</text>
+  <text x="755" y="568" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">meals_log · family_alerts</text>
+  <text x="755" y="582" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">prescriptions · reports</text>
+  <text x="755" y="596" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">emergency_incidents</text>
+  <text x="755" y="610" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">family_links/{5-char code}</text>
+
+  <!-- Secret Manager -->
+  <g filter="url(#sh)">
+    <rect x="876" y="482" width="184" height="140" rx="12" ry="5" fill="#fee2e2" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="968" y="504" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#7f1d1d" text-anchor="middle">🔒 Secret Manager</text>
+  <text x="968" y="520" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#991b1b" text-anchor="middle">GCP Secret Manager</text>
+  <line x1="886" y1="526" x2="1050" y2="526" stroke="#fca5a5" stroke-width="1"/>
+  <text x="968" y="540" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">medlive-firebase-admin</text>
+  <text x="968" y="554" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">medlive-google-api-key</text>
+  <text x="968" y="568" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">medlive-reminders-secret</text>
+  <text x="968" y="582" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">mounted at /secrets/</text>
+  <text x="968" y="596" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">IAM: Cloud Run SA only</text>
+  <text x="968" y="610" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">secretAccessor role</text>
+
+  <!-- ═══════════════════════════════════════════════
+       ROW 4 · INFRASTRUCTURE LAYER  (y: 645–785)
+  ═══════════════════════════════════════════════ -->
+
+  <!-- Cloud Scheduler -->
+  <g filter="url(#sh)">
+    <rect x="18" y="645" width="200" height="128" rx="18" ry="6" fill="#fef9c3" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="118" y="666" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#713f12" text-anchor="middle">⏰ Cloud Scheduler</text>
+  <line x1="28" y1="672" x2="208" y2="672" stroke="#fde047" stroke-width="1"/>
+  <text x="118" y="686" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">*/15 * * * *  (every 15 min)</text>
+  <text x="118" y="700" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">POST /api/reminders/trigger</text>
+  <text x="118" y="714" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Bearer REMINDERS_TRIGGER_SECRET</text>
+  <text x="118" y="728" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">15-min medication slot match</text>
+  <text x="118" y="742" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">timezone-aware (pytz)</text>
+  <text x="118" y="756" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">→ triggers FCM push</text>
+
+  <!-- FCM Push -->
+  <g filter="url(#sh)">
+    <rect x="234" y="645" width="208" height="128" rx="6" ry="20" fill="#fef9c3" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="338" y="666" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#713f12" text-anchor="middle">📲 FCM Push</text>
+  <line x1="244" y1="672" x2="432" y2="672" stroke="#fde047" stroke-width="1"/>
+  <text x="338" y="686" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Firebase Cloud Messaging</text>
+  <text x="338" y="700" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">medication reminders</text>
+  <text x="338" y="714" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">lunch check-in prompts</text>
+  <text x="338" y="728" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">background SW handler</text>
+  <text x="338" y="742" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">no app-open required</text>
+  <text x="338" y="756" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">deeplink: ?checkin=true</text>
+
+  <!-- Twilio -->
+  <g filter="url(#sh)">
+    <rect x="458" y="645" width="198" height="128" rx="22" ry="7" fill="#fef9c3" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="557" y="666" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#713f12" text-anchor="middle">📞 Twilio PSTN</text>
+  <line x1="468" y1="672" x2="646" y2="672" stroke="#fde047" stroke-width="1"/>
+  <text x="557" y="686" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">two-legged call bridge</text>
+  <text x="557" y="700" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">"Call my son" → guardian tool</text>
+  <text x="557" y="714" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Leg 1: call patient phone</text>
+  <text x="557" y="728" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Leg 2: bridge to family</text>
+  <text x="557" y="742" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">graceful: no Twilio → log</text>
+  <text x="557" y="756" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">POST /api/calling/initiate</text>
+
+  <!-- Cloud Build + Terraform -->
+  <g filter="url(#sh)">
+    <rect x="672" y="645" width="348" height="128" rx="10" ry="5" fill="#fef9c3" stroke="#2d2d2d" stroke-width="1.8"/>
+  </g>
+  <text x="846" y="666" font-family="Kalam,cursive" font-size="12" font-weight="700" fill="#713f12" text-anchor="middle">🏗️ Deploy Pipeline · Terraform IaC</text>
+  <line x1="682" y1="672" x2="1010" y2="672" stroke="#fde047" stroke-width="1"/>
+  <text x="740" y="686" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Cloud Build</text>
+  <text x="740" y="700" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">gcloud builds submit</text>
+  <text x="740" y="714" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">→ gcr.io/medlive-488722/</text>
+  <text x="740" y="728" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">scripts/deploy.sh</text>
+  <line x1="810" y1="678" x2="810" y2="768" stroke="#e5e0d8" stroke-width="1"/>
+  <text x="922" y="686" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Terraform (infra/)</text>
+  <text x="922" y="700" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">cloud_run.tf · firestore.tf</text>
+  <text x="922" y="714" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">iam.tf · secrets.tf</text>
+  <text x="922" y="728" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">scheduler.tf · main.tf</text>
+  <text x="922" y="742" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">scripts/setup_gcp.sh</text>
+  <text x="922" y="756" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">docker-compose (local dev)</text>
+
+  <!-- ═══════════════════════════════════════════════
+       ARROWS
+  ═══════════════════════════════════════════════ -->
+
+  <!-- Client UI → Firebase Auth (Google Sign-In) -->
+  <path d="M 226 87 Q 430 42 662 87" fill="none" stroke="#2d2d2d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="378" y="45" width="106" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="431" y="57" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">Google Sign-In →</text>
+
+  <!-- Onboarding → Firebase Auth -->
+  <path d="M 426 100 Q 545 128 662 100" fill="none" stroke="#2d2d2d" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <!-- Family Dashboard → Firebase Auth -->
+  <path d="M 640 87 L 662 87" fill="none" stroke="#2d2d2d" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <!-- Firebase Auth → Cloud Run (WebSocket bearer) -->
+  <path d="M 737 146 Q 620 162 400 172" fill="none" stroke="#2d5da1" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <rect x="508" y="148" width="156" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="586" y="160" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#2d5da1" text-anchor="middle">WS · 16↑24kHz PCM ↓ · Bearer</text>
+
+  <!-- Cloud Run → Gemini Live (bidi, thick purple) -->
+  <path d="M 146 462 Q 130 472 118 482" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arr-purple)"/>
+  <rect x="58" y="466" width="108" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="112" y="478" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#7c3aed" text-anchor="middle">bidi streaming ADK</text>
+
+  <!-- Cloud Run (scan) → Gemini 2.0 Flash -->
+  <path d="M 336 462 L 336 482" fill="none" stroke="#2d2d2d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="272" y="465" width="102" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="323" y="477" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">vision extract JSON</text>
+
+  <!-- Cloud Run (avatar) → Imagen 3 -->
+  <path d="M 543 462 L 543 482" fill="none" stroke="#2d2d2d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="480" y="465" width="102" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="531" y="477" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">generate image</text>
+
+  <!-- Cloud Run → Firestore -->
+  <path d="M 680 380 Q 730 445 755 482" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#arr-green)"/>
+  <rect x="670" y="427" width="84" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="712" y="439" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#15803d" text-anchor="middle">reads · writes</text>
+
+  <!-- Cloud Run → Secret Manager (dashed, mount at startup) -->
+  <path d="M 762 250 Q 870 250 968 482" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arr)"/>
+  <rect x="830" y="348" width="102" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="881" y="360" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#dc2626" text-anchor="middle">mount at startup</text>
+
+  <!-- Cloud Scheduler → Cloud Run (reminders trigger) -->
+  <path d="M 118 645 Q 150 560 230 462" fill="none" stroke="#b45309" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+  <rect x="108" y="537" width="122" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="169" y="549" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#b45309" text-anchor="middle">POST every 15 min</text>
+
+  <!-- Cloud Run → FCM (push) -->
+  <path d="M 338 462 Q 338 545 338 645" fill="none" stroke="#2d2d2d" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <rect x="285" y="547" width="80" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="325" y="559" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">FCM message</text>
+
+  <!-- Cloud Run → Twilio (calling) -->
+  <path d="M 490 430 Q 530 548 557 645" fill="none" stroke="#2d2d2d" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <rect x="460" y="537" width="80" height="17" rx="3" fill="#fdfbf7"/>
+  <text x="500" y="549" font-family="Patrick Hand,sans-serif" font-size="9.5" fill="#555" text-anchor="middle">REST API call</text>
+
+</svg>
+</div>
+
+<p class="footer">
+  gemini-2.5-flash-native-audio-latest &nbsp;·&nbsp; Google ADK (multi-agent orchestration) &nbsp;·&nbsp; Cloud Run &nbsp;·&nbsp; Cloud Firestore &nbsp;·&nbsp; Terraform IaC<br>
+  Built for the <strong>Gemini Live Agent Challenge</strong> &nbsp;·&nbsp; March 2026
+</p>
+
+</body>
+</html>

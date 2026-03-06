@@ -1,0 +1,28 @@
+# Version control
+.git
+.gitignore
+
+# Secrets — never bake into image
+.env
+.env.example
+credentials/
+
+# Python artefacts
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Test / CI
+.pytest_cache
+tests/
+
+# Dev-only
+docs/
+infra/
+scripts/
+
+# Docs
+*.md
+README.md
