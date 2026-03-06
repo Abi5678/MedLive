@@ -297,19 +297,8 @@ function appendTranscript(text, role, streaming = false) {
     return;
   }
   if (streaming && role === "user" && currentUserBubble) {
-    // Gemini input_transcription sends a mix:
-    //  - word-by-word deltas: ' Can', ' you', ' show'
-    //  - periodic cumulative snapshots: ' Can you show me the pills so I'
-    // Detect cumulative (longer text containing our accumulation) vs delta
-    const trimmedNew = text.trimStart();
-    const trimmedAcc = accumulatedUserText.trimEnd();
-    if (trimmedNew.length > trimmedAcc.length && trimmedNew.startsWith(trimmedAcc)) {
-      // Cumulative replacement
-      accumulatedUserText = text.trim();
-    } else {
-      // Delta — append
-      accumulatedUserText = (accumulatedUserText + text).replace(/  +/g, " ").trim();
-    }
+    // Gemini input_transcription sends cumulative text for the whole turn so far, so replace.
+    accumulatedUserText = text;
     const content = currentUserBubble.querySelector(".message-content");
     content.textContent = accumulatedUserText;
     scheduleTranscriptScroll();
