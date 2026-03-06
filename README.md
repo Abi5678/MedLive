@@ -11,13 +11,14 @@ MedLive is a **voice-first, vision-enabled AI health companion** for elderly pat
 | Feature | What it does |
 |---------|-------------|
 | 🎙️ **Voice Guardian** | Real-time bidi voice conversation (Gemini Live API) in Hindi, Spanish, English |
+| 🖼️ **Generative Avatar** | Onboarding wizard generates a personalized 2D companion via Gemini Image Generation |
 | 💊 **Pill Verification** | Point camera at pills → AI confirms correct medication, dose, and timing |
+| 📸 **Macro Food Logging** | Snap a picture of your plate → AI extracts macros (Calories/Protein) and saves to profile |
+| 🏥 **Doctor Booking** | Voice agent queries nearby hospitals and confirms physical appointments using Generative UI |
 | 📄 **Prescription Scanning** | Photograph prescription → extracts medications → stores to Firestore |
-| 🧪 **Lab Report Reading** | Photograph lab results → structured extraction → caregiver dashboard |
 | 🚨 **Emergency Protocol** | Red-line keyword detection (chest pain, stroke, etc.) → immediate emergency guidance + family alert |
-| 📲 **Proactive Reminders** | FCM push notifications at medication times; no app-open required |
+| 📲 **Proactive Reminders** | Cloud Tasks pushes notifications & triggers the ADK agent to speak unprompted |
 | 👨‍👩‍👧 **Family Dashboard** | Live adherence charts, vitals trends, missed dose alerts for caregivers |
-| 📞 **Family Calling** | "Call my son" → Twilio PSTN bridge to family member's phone |
 | 🌐 **Multilingual** | All responses auto-detected from user's preferred language |
 
 ---
@@ -30,48 +31,49 @@ Browser (voice + camera)
   ├── WebSocket /ws/{uid}?token=...
   │     ├── Upstream:  16kHz PCM mic  → ADK → Gemini Live API
   │     └── Downstream: Gemini audio  → 24kHz PCM → speakers
-  └── REST: profile, dashboard, scan, avatar, family, reminders
+  └── REST: profile, dashboard, food, scan, avatar, family, reminders
 
 Cloud Run (FastAPI + uvicorn)
   ├── ADK Runner → root_agent
   │     ├── Guardian agent   — medications, vitals, meals, emergency
   │     ├── Insights agent   — adherence scoring, trends, daily digest
+  │     ├── Booking agent    — nearby hospitals, available slots, confirmations
   │     └── Interpreter agent — prescriptions, translation
   ├── Gemini Live API (gemini-2.5-flash-native-audio-latest)
-  ├── Gemini 2.0 Flash (prescription/report extraction)
-  ├── Imagen 3 (avatar generation)
+  ├── Gemini 2.5 Pro (food macro analysis)
+  ├── Gemini 2.0 Flash (avatar generation)
   └── Cloud Firestore (users, medications, vitals, adherence, alerts)
 
-Cloud Scheduler → POST /api/reminders/trigger (every 15 min)
+Google Cloud Tasks → POST /api/tasks/reminder (asynchronous proactive audio)
 ```
 
 [View full architecture diagram →](docs/architecture.html)
+[View implementation guide →](docs/HACKATHON_ARCHITECTURE.md)
 
 ---
 
-## 🚀 Quick Start — No Docker
+## 🚀 Quick Start (Local Docker)
 
-The fastest way to run locally uses in-memory mock data (no Firebase required):
+The fastest way to run locally uses the pre-configured `docker-compose.yml` to spin up a local Firestore Emulator so you don't need to provision GCP infrastructure immediately:
 
 ```bash
 # 1. Clone
-git clone https://github.com/YOUR_USERNAME/medlive.git
-cd medlive
+git clone https://github.com/Abi5678/MedLive.git
+cd MedLive
 
-# 2. Install dependencies (requires uv: https://docs.astral.sh/uv/)
-uv sync
-
-# 3. Configure
+# 2. Configure
 cp .env.example .env
-# Edit .env — set GOOGLE_API_KEY and USE_FIRESTORE=false
+# Edit .env — set your GOOGLE_API_KEY (required for Gemini)
 
-# 4. Run
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 3. Start app + Firestore emulator + auto-seed demo data
+docker-compose up
 
-# 5. Open http://localhost:8000
+# App:             http://localhost:8000
+# Emulator UI:     http://localhost:4000
+
+# Tear down
+docker-compose down -v
 ```
-
-With `USE_FIRESTORE=false`, all data is held in-memory using `agents/shared/mock_data.py` — no Firebase or GCP credentials needed.
 
 ---
 
