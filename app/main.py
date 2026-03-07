@@ -472,17 +472,22 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         except Exception as e:
             logger.warning("Could not load profile for uid=%s: %s", uid, e)
 
-    # Fallback: if no profile, use persona query param (legacy support)
-    if language == "English" and companion_name == "Health Companion":
-        persona = websocket.query_params.get("persona", "en")
-        PERSONA_DEFAULTS = {
-            "hi": ("Hindi", "Dr. Priya", "Aoede"),
-            "es": ("Spanish", "Enfermera Elena", "Aoede"),
-            "kn": ("Kannada", "ಆರೋಗ್ಯ ಸಂಗಾತಿ", "Aoede"),
-            "en": ("English", "Dr. Chen", "Aoede"),
-        }
-        fallback_vals = PERSONA_DEFAULTS.get(persona, ("English", "Health Companion", "Aoede"))
-        language, companion_name, _ = fallback_vals
+    # Fallback: Trust frontend's persona query param if DB values are defaults
+    persona = websocket.query_params.get("persona")
+    PERSONA_DEFAULTS = {
+        "hi": ("Hindi", "Dr. Priya", "Aoede"),
+        "es": ("Spanish", "Enfermera Elena", "Aoede"),
+        "kn": ("Kannada", "ಆರೋಗ್ಯ ಸಂಗಾತಿ", "Aoede"),
+        "en": ("English", "Dr. Chen", "Aoede"),
+    }
+    if persona and persona in PERSONA_DEFAULTS:
+        fallback_lang, fallback_name, fallback_voice = PERSONA_DEFAULTS[persona]
+        if language == "English":
+            language = fallback_lang
+        if companion_name == "Health Companion":
+            companion_name = fallback_name
+        if voice_name == "Aoede":
+            voice_name = fallback_voice
 
     logger.info(
         "WebSocket connected: uid=%s session=%s language=%s companion=%s voice=%s",
@@ -514,11 +519,11 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         logger.info("Injecting explicit proactive prompt: %s", proactive_prompt)
     elif not onboarding_complete:
         proactive_prompt = (
-            "[SYSTEM: This is a brand-new user who has NOT completed onboarding. "
-            "Transfer them to the onboarding agent immediately. Say something brief "
-            "like 'Welcome! Let me get you set up.' and hand off.]"
+            f"[SYSTEM: This is a brand-new user who has NOT completed onboarding. "
+            f"Transfer them to the onboarding agent immediately. Say something brief "
+            f"in {language} like 'Welcome! Let me help you get set up.' and hand off.]"
         )
-        logger.info("New user detected — injecting onboarding auto-start prompt")
+        logger.info("New user detected — injecting onboarding auto-start prompt in %s", language)
     elif patient_name:
         proactive_prompt = (
             f"[SYSTEM: Welcome back! The patient's name is {patient_name}. "

@@ -821,9 +821,7 @@ function connectWebSocket() {
   websocket.onclose = (event) => {
     console.log("[MedLive] WebSocket closed:", event.code, event.reason);
     isConnected = false;
-    hasGreeted = false;
     isGeminiReady = false;
-    pendingGreeting = false;
 
     if (event.code === 4401 && uid !== "demo_user") {
       // Auth failure — token expired, redirect to auth (skip when using skip-auth-for-testing)
@@ -1060,23 +1058,6 @@ function handleADKEvent(event) {
 }
 
 // ---------------------------------------------------------------------------
-// Greeting helper — extracted so it can be called from onmessage (ready) too
-// ---------------------------------------------------------------------------
-
-function sendGreeting() {
-  if (hasGreeted || !websocket || websocket.readyState !== WebSocket.OPEN) return;
-  const companionName = localStorage.getItem("medlive_companion_name") || "Health Companion";
-  websocket.send(
-    JSON.stringify({
-      type: "text",
-      text: `[SYSTEM: The patient just connected. You are ${companionName}. Greet them warmly in ${language}. Keep it brief — one or two sentences. Then ask how they are feeling today.]`,
-    })
-  );
-  hasGreeted = true;
-  console.log("[MedLive] Greeting sent to Gemini");
-}
-
-// ---------------------------------------------------------------------------
 // Audio Recording
 // ---------------------------------------------------------------------------
 
@@ -1147,13 +1128,6 @@ async function startListening() {
     console.log("[MedLive] Audio recording started");
     isListening = true;
     setStatus(currentLocale.listening, "listening");
-
-    // Send greeting on first mic start. Send immediately so we don't deadlock:
-    // "ready" may only arrive after Gemini sends its first event, which can be
-    // in response to this greeting.
-    if (!hasGreeted) {
-      sendGreeting();
-    }
   } catch (e) {
     console.error("[MedLive] Microphone error:", e);
     setStatus("Mic blocked — check permissions", "");
