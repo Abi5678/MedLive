@@ -98,6 +98,7 @@ from app.api.reminders import router as reminders_router
 from app.api.scan import router as scan_router
 from app.api.calling import router as calling_router
 from app.api.food import router as food_router
+from app.api.medications import router as medications_router
 
 app.include_router(avatar_router)
 app.include_router(family_router)
@@ -105,6 +106,7 @@ app.include_router(reminders_router)
 app.include_router(scan_router)
 app.include_router(calling_router)
 app.include_router(food_router)
+app.include_router(medications_router)
 
 # Session service (will upgrade to Firestore-backed in Phase 3)
 session_service = InMemorySessionService()
@@ -335,16 +337,31 @@ async def get_dashboard_data(
         get_vital_trends,
         get_daily_digest,
     )
+    from agents.shared.mock_data import PATIENT_PROFILE as _mock_profile
 
     class _ToolCtx:
         state = {"user_id": patient_uid}
 
-    ctx = _ToolCtx()
+    # In demo / skip-auth mode force mock data by passing no tool_context,
+    # so the insights tools bypass Firestore (which has no health records for
+    # demo_user) and fall back to mock_data.py instead.
+    ctx = None if _skip_auth_for_testing() else _ToolCtx()
 
     # Default fallback data for when Firestore has no records
     _default_adherence = {"taken": 0, "missed": 0, "total_doses": 0, "score": 0, "rating": "No data"}
     _default_trend = {"trend": "stable", "readings": [], "latest_reading": None}
     _default_digest = {"medications": {"taken": [], "missed": [], "pending": []}, "vitals": [], "meals": []}
+
+    # Resolve patient name (Firestore profile → mock data fallback)
+    patient_name = _mock_profile.get("name", "")
+    fs = FirestoreService.get_instance()
+    if fs.is_available:
+        try:
+            profile = await fs.get_patient_profile(patient_uid)
+            if profile:
+                patient_name = profile.get("name", profile.get("companion_name", patient_name))
+        except Exception:
+            pass
 
     try:
         adherence, blood_sugar_trend, bp_trend, digest = await asyncio.gather(
@@ -361,6 +378,7 @@ async def get_dashboard_data(
         digest = _default_digest
 
     return JSONResponse({
+        "patient_name": patient_name,
         "adherence": adherence or _default_adherence,
         "blood_sugar_trend": blood_sugar_trend or _default_trend,
         "blood_pressure_trend": bp_trend or _default_trend,
@@ -472,6 +490,11 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         except Exception as e:
             logger.warning("Could not load profile for uid=%s: %s", uid, e)
 
+    q_patient_name = websocket.query_params.get("patient_name")
+    if q_patient_name and (_skip_auth_for_testing() or not patient_name):
+        patient_name = q_patient_name
+        onboarding_complete = True
+
     # Fallback: Trust frontend's persona query param if DB values are defaults
     persona = websocket.query_params.get("persona")
     PERSONA_DEFAULTS = {
@@ -482,7 +505,10 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     }
     if persona and persona in PERSONA_DEFAULTS:
         fallback_lang, fallback_name, fallback_voice = PERSONA_DEFAULTS[persona]
-        if language == "English":
+        # In demo/skip-auth mode always trust the frontend persona param (Firestore
+        # may have a stale language from a previous session that cannot be updated).
+        # In auth mode only override when the DB still has the default "English".
+        if language == "English" or _skip_auth_for_testing():
             language = fallback_lang
         if companion_name == "Health Companion":
             companion_name = fallback_name
@@ -659,6 +685,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                         parts=[types.Part(text=user_text)]
                     )
                     live_request_queue.send_content(content)
+                    # Removed send_activity_end() to prevent dropping long responses
 
         except WebSocketDisconnect:
             logger.info(f"Client disconnected: uid={uid}")

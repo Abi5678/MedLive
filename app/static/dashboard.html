@@ -488,7 +488,7 @@
     <div class="dashboard-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <a href="index.html" class="sidebar-logo">
+            <a href="/" class="sidebar-logo">
                 <span class="material-icons">monitor_heart</span>
                 ✏️ MedLive
             </a>
@@ -598,7 +598,7 @@
         // Firebase Init (same project as patient app)
         // ---------------------------------------------------------------------------
         const _fbConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
+            apiKey: "AIzaSyAE7FlwaMT_WIJk5a1np2xFQp_a8huGSro",
             authDomain: "medlive-488722.firebaseapp.com",
             projectId: "medlive-488722",
             storageBucket: "medlive-488722.firebasestorage.app",
@@ -729,6 +729,10 @@
                 }
 
                 const data = await resp.json();
+                // Persist patient name from API so header always shows the real name
+                if (data.patient_name) {
+                    localStorage.setItem("medlive_patient_name", data.patient_name);
+                }
                 renderWelcomeHeader();
                 renderAdherence(data.adherence);
                 renderAlerts(data.digest, data.blood_pressure_trend);

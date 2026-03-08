@@ -61,6 +61,8 @@ TRANSFORM with this style:
 - Lighting: Soft even lighting
 - Art style: 2D hand-drawn character illustration (webcomic/storybook aesthetic)
 
+CRITICAL INSTRUCTION: DO NOT include any text, words, UI elements, or prompt descriptions in the image. The image must ONLY contain the character artwork.
+
 The result should be clearly recognizable as THIS specific person, but illustrated as a casual character."""
 
 RANDOM_AVATAR_PROMPT_TEMPLATE = (
@@ -69,7 +71,8 @@ RANDOM_AVATAR_PROMPT_TEMPLATE = (
     "vibrant saturated colors. Head and shoulders, 3/4 view, warm caring smile, "
     "soft even lighting. purely solid white (#FFFFFF) background — absolutely no "
     "gradients, shadows, or background elements. "
-    "Professional 2D character render, adult, NOT a child."
+    "Professional 2D character render, adult, NOT a child. "
+    "CRITICAL INSTRUCTION: DO NOT include any text, words, UI elements, or prompt descriptions in the image. The image must ONLY contain the character artwork."
 )
 
 

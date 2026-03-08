@@ -218,6 +218,87 @@
         transform: rotate(360deg);
       }
     }
+
+    /* Welcome-back banner (shown for 2s after returning-user sign-in) */
+    .welcome-back-banner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px 32px;
+      text-align: center;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-back-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid var(--fg);
+      object-fit: cover;
+      box-shadow: 4px 4px 0 0 var(--fg);
+    }
+
+    .welcome-back-name {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .welcome-back-sub {
+      color: var(--fg);
+      opacity: 0.6;
+      font-size: 1rem;
+    }
+
+    .welcome-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .welcome-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--secondary);
+      animation: welcomeDot 1.2s infinite ease-in-out;
+    }
+
+    .welcome-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .welcome-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes welcomeDot {
+
+      0%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+
+      50% {
+        transform: translateY(-6px);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 
@@ -264,6 +345,21 @@
     <div class="auth-message" id="auth-message"></div>
   </div>
 
+  <!-- Welcome Back Banner (shown 2s after returning-user sign-in) -->
+  <div class="welcome-back-banner" id="welcome-back-banner" style="display:none;">
+    <img class="welcome-back-avatar" id="welcome-back-avatar" src="" onerror="this.style.display='none'" alt="Avatar"
+      style="display:none;" />
+    <p class="welcome-back-name" id="welcome-back-name">Welcome back! 👋</p>
+    <p class="welcome-back-sub">Ready to speak with your companion?</p>
+
+    <div style="display: flex; gap: 12px; margin-top: 16px; width: 100%; justify-content: center;">
+      <button class="btn-email" style="padding: 10px 20px; font-size: 1rem; width: auto;"
+        onclick="window.location.href='/'">Continue</button>
+      <button class="btn-google" style="padding: 10px 20px; font-size: 1rem; width: auto; margin-bottom: 0;"
+        onclick="window.location.href='/static/onboarding.html'">Edit Profile</button>
+    </div>
+  </div>
+
   <!-- Firebase JS SDK (compat CDN) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -271,7 +367,7 @@
   <script>
     // Firebase config (web app)
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
+      apiKey: "AIzaSyAE7FlwaMT_WIJk5a1np2xFQp_a8huGSro",
       authDomain: "medlive-488722.firebaseapp.com",
       projectId: "medlive-488722",
       storageBucket: "medlive-488722.firebasestorage.app",
@@ -319,7 +415,13 @@
             if (pRes.status === 404) {
               window.location.href = '/static/onboarding.html';
             } else if (pRes.ok) {
-              window.location.href = '/';
+              const profile = await pRes.json();
+              if (profile.language) localStorage.setItem('medlive_language', profile.language);
+              if (profile.companion_name) localStorage.setItem('medlive_companion_name', profile.companion_name);
+              if (profile.avatar_b64) localStorage.setItem('medlive_avatar', profile.avatar_b64);
+              if (profile.voice_name) localStorage.setItem('medlive_voice_name', profile.voice_name);
+              if (profile.name) localStorage.setItem('medlive_display_name', profile.name);
+              showWelcomeBack(profile);
             } else {
               window.location.href = '/static/onboarding.html';
             }
@@ -362,7 +464,9 @@
           if (profile.language) localStorage.setItem('medlive_language', profile.language);
           if (profile.companion_name) localStorage.setItem('medlive_companion_name', profile.companion_name);
           if (profile.avatar_b64) localStorage.setItem('medlive_avatar', profile.avatar_b64);
-          window.location.href = '/';
+          if (profile.voice_name) localStorage.setItem('medlive_voice_name', profile.voice_name);
+          if (profile.name) localStorage.setItem('medlive_display_name', profile.name);
+          showWelcomeBack(profile);
         } else {
           // Profile endpoint failed but user is signed in — go to onboarding
           window.location.href = '/static/onboarding.html';
@@ -410,6 +514,28 @@
         showMessage(msg);
         setLoading(false);
       }
+    }
+
+    function showWelcomeBack(profile) {
+      const banner = document.getElementById('welcome-back-banner');
+      if (!banner) { window.location.href = '/'; return; }
+
+      const name = profile.name || profile.companion_name || '';
+      const nameEl = document.getElementById('welcome-back-name');
+      if (name && nameEl) nameEl.textContent = `Welcome back, ${name}! 👋`;
+
+      const avatarEl = document.getElementById('welcome-back-avatar');
+      if (profile.avatar_b64 && avatarEl) {
+        avatarEl.src = profile.avatar_b64;
+        avatarEl.style.display = 'block';
+      } else if (avatarEl) {
+        avatarEl.style.display = 'none';
+      }
+
+      const card = document.querySelector('.auth-card');
+      if (card) card.style.display = 'none';
+      banner.style.display = 'flex';
+      // setTimeout(() => { window.location.href = '/'; }, 2200);
     }
 
     // Auto-refresh token every 50 minutes

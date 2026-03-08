@@ -225,14 +225,37 @@ async def verify_pill(
                 }
             )
     if matches:
+        await emit_ui_update(
+            "pill_verified",
+            {
+                "verified": True,
+                "matches": matches,
+                "message": f"Verified: {', '.join(str(m['medication']) for m in matches)}"
+            },
+            tool_context
+        )
         return {
             "verified": True,
             "matches": matches,
             "message": (
-                f"This pill matches: {', '.join(m['medication'] for m in matches)}. "
+                f"This pill matches: {', '.join(str(m['medication']) for m in matches)}. "
                 "It is safe to take."
             ),
         }
+        
+    await emit_ui_update(
+        "pill_verified",
+        {
+            "verified": False,
+            "pill_described": {
+                "color": pill_color,
+                "shape": pill_shape,
+                "imprint": pill_imprint,
+            },
+            "message": "WARNING: Pill mismatch!"
+        },
+        tool_context
+    )
     return {
         "verified": False,
         "matches": [],
@@ -262,6 +285,12 @@ async def log_vitals(
         value: The measured value (e.g. '130/82', '125', '68.5').
         unit: The unit of measurement (e.g. 'mmHg', 'mg/dL', 'kg'). Optional.
     """
+    if not unit:
+        if vital_type in ("blood_pressure", "bloodpressure"):
+            unit = "mmHg"
+        elif vital_type in ("blood_sugar", "bloodsugar", "glucose"):
+            unit = "mg/dL"
+
     today = datetime.now().strftime("%Y-%m-%d")
     now_time = datetime.now().strftime("%H:%M")
 
@@ -310,6 +339,7 @@ async def log_vitals(
         "success": True,
         "vital_type": vital_type,
         "value": value,
+        "recorded": entry,
         "recorded_at": f"{today} {now_time}",
         "message": f"Vital sign logged.{directive}"
     }

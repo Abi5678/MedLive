@@ -30,8 +30,11 @@
           style="text-decoration:none;">
           <span class="material-icons">dashboard</span>
         </a>
-        <button class="menu-btn" id="change-persona-btn" aria-label="Change companion" title="Change companion">
-          <span class="material-icons">swap_horiz</span>
+        <button class="menu-btn" id="med-schedule-btn" aria-label="Medication Schedule" title="Medication Schedule">
+          <span class="material-icons">alarm</span>
+        </button>
+        <button class="menu-btn" id="change-persona-btn" aria-label="Edit profile" title="Edit Profile">
+          <span class="material-icons">manage_accounts</span>
         </button>
       </div>
     </div>
@@ -58,6 +61,18 @@
 
     <!-- Status text (Tap to speak / Listening... / Speaking...) -->
     <p class="hero-status-text" id="status-text">Connecting...</p>
+
+    <!-- Active Agent Badge (hidden by default, shown when a sub-agent is responding) -->
+    <div id="agent-badge" class="agent-badge" style="display:none;">
+      <span id="agent-badge-icon">🛡️</span>
+      <span id="agent-badge-label">Guardian</span>
+    </div>
+
+    <!-- Interpreter Banner (Hidden by default) -->
+    <div id="interpreter-banner" class="interpreter-banner" style="display:none;">
+      <span class="material-icons">language</span>
+      <span id="interpreter-banner-text">Interpreter Active: Kannada ↔ English</span>
+    </div>
   </section>
 
   <!-- Action Grid — docked below hero -->
@@ -87,6 +102,16 @@
       <span class="material-icons">restaurant</span>
       <span id="label-food">Log Food</span>
     </button>
+    <button class="action-btn" id="live-translate-btn" style="position:relative;background:var(--accent,#81d4fa);">
+      <div class="tape-deco"></div>
+      <span class="material-icons">language</span>
+      <span id="label-translate">Live Translate</span>
+    </button>
+    <button class="action-btn" id="ambient-camera-btn" style="position:relative;background:var(--postit,#fff9c4);">
+      <div class="tack-deco"></div>
+      <span class="material-icons">videocam</span>
+      <span id="label-ambient">Show Camera</span>
+    </button>
     <button class="action-btn sos-btn" style="position:relative;">
       <div class="tack-deco" style="background:var(--accent);"></div>
       <span>SOS</span>
@@ -99,10 +124,15 @@
     <div class="chat-panel-handle" id="drawer-handle"></div>
     <div class="transcript-container" id="transcript"></div>
     <div class="chat-panel-footer">
-      <button class="chat-end-btn" id="chat-end-btn">
-        <span class="material-icons">mic_off</span>
-        End Chat
-      </button>
+      <div class="chat-input-pill">
+        <input type="text" id="chat-text-input" class="chat-text-input" placeholder="Aa" autocomplete="off" />
+        <button class="chat-action-btn" id="chat-send-btn" title="Send (Enter)">
+          <span class="material-icons">send</span>
+        </button>
+        <button class="chat-action-btn active" id="chat-mic-btn" title="Toggle Microphone">
+          <span class="material-icons">mic</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -183,7 +213,7 @@
   <script>
     // Initialize Firebase (guard against double-init if auth.html was visited)
     const _fbConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
+      apiKey: "AIzaSyAE7FlwaMT_WIJk5a1np2xFQp_a8huGSro",
       authDomain: "medlive-488722.firebaseapp.com",
       projectId: "medlive-488722",
       storageBucket: "medlive-488722.firebasestorage.app",
@@ -280,6 +310,163 @@
       }
     }
   </script>
+
+
+  <!-- ===== Profile Settings Modal (bottom sheet) ===== -->
+  <div id="profile-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:flex-end;justify-content:center;">
+    <div class="profile-modal-card" id="profile-modal-card">
+      <div class="tape-deco" style="position:absolute;top:-10px;width:80px;left:calc(50% - 40px);"></div>
+
+      <!-- Header -->
+      <div class="profile-modal-header">
+        <span style="font-size:1.3rem;font-weight:700;">✏️ Your Profile</span>
+        <button class="profile-modal-close" id="profile-modal-close" aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <!-- Avatar -->
+      <div class="profile-avatar-row">
+        <div class="profile-avatar-wrap">
+          <img class="profile-avatar-img" id="profile-avatar-preview" src="" alt="Avatar"
+            onerror="this.style.display='none';document.getElementById('profile-avatar-fallback').style.display='flex';" />
+          <div class="profile-avatar-fallback" id="profile-avatar-fallback">
+            <span class="material-icons" style="font-size:48px;color:var(--muted);">face</span>
+          </div>
+        </div>
+        <div class="profile-avatar-actions">
+          <button class="profile-avatar-btn" id="profile-gen-avatar-btn">🎨 Regenerate</button>
+          <button class="profile-avatar-btn" id="profile-upload-avatar-btn">📷 Upload Photo</button>
+          <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" />
+        </div>
+      </div>
+      <p class="profile-generating-msg" id="profile-generating-msg" style="display:none;">⏳ Generating avatar…</p>
+
+      <!-- Your Name -->
+      <div class="profile-field-group">
+        <label class="profile-field-label" for="profile-name-input">Your Name</label>
+        <input class="profile-field-input" id="profile-name-input" type="text" placeholder="Your display name" />
+      </div>
+
+      <!-- Language -->
+      <div class="profile-field-group">
+        <label class="profile-field-label">Language</label>
+        <div class="profile-lang-grid">
+          <button class="profile-lang-btn" data-lang="English">🇺🇸 English</button>
+          <button class="profile-lang-btn" data-lang="Hindi">🇮🇳 Hindi</button>
+          <button class="profile-lang-btn" data-lang="Spanish">🇲🇽 Spanish</button>
+          <button class="profile-lang-btn" data-lang="Kannada">🇮🇳 Kannada</button>
+        </div>
+      </div>
+
+      <!-- Companion Name -->
+      <div class="profile-field-group">
+        <label class="profile-field-label" for="profile-companion-input">Companion Name</label>
+        <input class="profile-field-input" id="profile-companion-input" type="text" placeholder="e.g. Dr. Chen" />
+        <div class="profile-companion-chips" id="profile-companion-chips"></div>
+      </div>
+
+      <!-- Voice -->
+      <div class="profile-field-group">
+        <label class="profile-field-label">Voice</label>
+        <div class="profile-voice-grid">
+          <button class="profile-voice-btn" data-voice="Aoede">👩 Aoede</button>
+          <button class="profile-voice-btn" data-voice="Fenrir">👨 Fenrir</button>
+          <button class="profile-voice-btn" data-voice="Kore">👧 Kore</button>
+          <button class="profile-voice-btn" data-voice="Charon">👴 Charon</button>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <p class="profile-error" id="profile-error" style="display:none;"></p>
+
+      <!-- Demo notice -->
+      <div class="profile-demo-notice" id="profile-demo-notice" style="display:none;">
+        🔒 Demo mode — changes are saved locally only
+      </div>
+
+      <!-- Actions -->
+      <div class="profile-modal-actions">
+        <button class="profile-btn-cancel" id="profile-cancel-btn">Cancel</button>
+        <button class="profile-btn-save" id="profile-save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Medication Schedule Modal (bottom sheet) ===== -->
+  <div id="med-schedule-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:flex-end;justify-content:center;">
+    <div class="med-schedule-card" id="med-schedule-card">
+      <div class="tape-deco" style="position:absolute;top:-10px;width:80px;left:calc(50% - 40px);"></div>
+
+      <!-- Header -->
+      <div class="profile-modal-header">
+        <span style="font-size:1.3rem;font-weight:700;">💊 Medication Schedule</span>
+        <button class="profile-modal-close" id="med-schedule-close" aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <!-- Next dose countdown -->
+      <div id="med-next-dose" class="med-next-dose">
+        <span class="material-icons" style="color:var(--secondary);font-size:20px;">schedule</span>
+        <span id="med-next-dose-text">Calculating...</span>
+      </div>
+
+      <!-- Medication list -->
+      <div id="med-list-container" class="med-list-container">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Empty state -->
+      <div id="med-empty-state" class="med-empty-state" style="display:none;">
+        <span class="material-icons" style="font-size:48px;opacity:0.3;">medication</span>
+        <p style="margin-top:8px;opacity:0.6;">No medications yet</p>
+        <p style="font-size:0.85rem;opacity:0.4;">Add one below or scan a prescription</p>
+      </div>
+
+      <!-- Add medication form (collapsible) -->
+      <details id="med-add-details" class="med-add-section">
+        <summary class="med-add-summary">
+          <span class="material-icons" style="font-size:18px;">add_circle</span>
+          Add Medication
+        </summary>
+        <div class="med-add-form">
+          <div class="profile-field-group">
+            <label class="profile-field-label">Name</label>
+            <input class="profile-field-input" id="med-add-name" type="text" placeholder="e.g. Metformin" />
+          </div>
+          <div class="profile-field-group">
+            <label class="profile-field-label">Dosage</label>
+            <input class="profile-field-input" id="med-add-dosage" type="text" placeholder="e.g. 500mg" />
+          </div>
+          <div class="profile-field-group">
+            <label class="profile-field-label">Schedule Times</label>
+            <div class="med-time-presets">
+              <button type="button" class="med-time-chip" data-time="08:00">🌅 Morning 8am</button>
+              <button type="button" class="med-time-chip" data-time="13:00">☀️ Afternoon 1pm</button>
+              <button type="button" class="med-time-chip" data-time="18:00">🌆 Evening 6pm</button>
+              <button type="button" class="med-time-chip" data-time="21:00">🌙 Night 9pm</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+              <input type="time" id="med-add-custom-time" class="profile-field-input" style="width:auto;flex:1;" />
+              <button type="button" id="med-add-custom-time-btn" class="profile-avatar-btn">+ Add</button>
+            </div>
+            <div id="med-selected-times" class="med-selected-times"></div>
+          </div>
+          <button type="button" id="med-add-save-btn" class="profile-btn-save" style="width:100%;margin-top:8px;">
+            Save Medication
+          </button>
+        </div>
+      </details>
+
+      <!-- Demo notice -->
+      <div class="profile-demo-notice" id="med-demo-notice" style="display:none;">
+        🔒 Demo mode — using sample medications
+      </div>
+    </div>
+  </div>
 
 </body>
 
